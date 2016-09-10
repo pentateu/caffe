@@ -79,36 +79,14 @@ if(USE_OPENCV)
   add_definitions(-DUSE_OPENCV)
 endif()
 
+
 # ---[ BLAS
-if(NOT APPLE)
-  set(BLAS "Atlas" CACHE STRING "Selected BLAS library")
-  set_property(CACHE BLAS PROPERTY STRINGS "Atlas;Open;MKL")
+set(BLAS "Atlas" CACHE STRING "Selected BLAS library")
+set_property(CACHE BLAS PROPERTY STRINGS "Atlas;Open;MKL")
 
-  if(BLAS STREQUAL "Atlas" OR BLAS STREQUAL "atlas")
-    find_package(Atlas REQUIRED)
-    include_directories(SYSTEM ${Atlas_INCLUDE_DIR})
-    list(APPEND Caffe_LINKER_LIBS ${Atlas_LIBRARIES})
-  elseif(BLAS STREQUAL "Open" OR BLAS STREQUAL "open")
-    find_package(OpenBLAS REQUIRED)
-    include_directories(SYSTEM ${OpenBLAS_INCLUDE_DIR})
-    list(APPEND Caffe_LINKER_LIBS ${OpenBLAS_LIB})
-  elseif(BLAS STREQUAL "MKL" OR BLAS STREQUAL "mkl")
-    find_package(MKL REQUIRED)
-    include_directories(SYSTEM ${MKL_INCLUDE_DIR})
-    list(APPEND Caffe_LINKER_LIBS ${MKL_LIBRARIES})
-    add_definitions(-DUSE_MKL)
-  endif()
-elseif(APPLE)
-  find_package(vecLib REQUIRED)
-  include_directories(SYSTEM ${vecLib_INCLUDE_DIR})
-  list(APPEND Caffe_LINKER_LIBS ${vecLib_LINKER_LIBS})
-
-  if(VECLIB_FOUND)
-    if(NOT vecLib_INCLUDE_DIR MATCHES "^/System/Library/Frameworks/vecLib.framework.*")
-      add_definitions(-DUSE_ACCELERATE)
-    endif()
-  endif()
-endif()
+find_package(OpenBLAS REQUIRED)
+include_directories(SYSTEM ${OpenBLAS_INCLUDE_DIR})
+list(APPEND Caffe_LINKER_LIBS ${OpenBLAS_LIB})
 
 # ---[ Python
 if(BUILD_python)
@@ -119,18 +97,18 @@ if(BUILD_python)
     find_package(NumPy 1.7.1)
     # Find the matching boost python implementation
     set(version ${PYTHONLIBS_VERSION_STRING})
-    
+
     STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
     find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
     set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
-    
+
     while(NOT "${version}" STREQUAL "" AND NOT Boost_PYTHON_FOUND)
       STRING( REGEX REPLACE "([0-9.]+).[0-9]+" "\\1" version ${version} )
-      
+
       STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
       find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
       set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
-      
+
       STRING( REGEX MATCHALL "([0-9.]+).[0-9]+" has_more_version ${version} )
       if("${has_more_version}" STREQUAL "")
         break()
